@@ -1,52 +1,46 @@
-# Calculator Application
+# 📱 Calculator Application
 
-## Overview
+A powerful and easy-to-use calculator application built with **Jetpack Compose**. This application supports both **basic arithmetic** and **scientific calculations** with a user-friendly interface.
 
-This calculator application is a basic calculator made using Jetpack Compose.
+## ✨ Features
 
-### Features
+### 🧮 Level 1: Basic Calculator
+Perform essential arithmetic operations with ease:
 
-Level 1: Basic Calculator
+- ➕ **Addition (+)**
+- ➖ **Subtraction (-)**
+- ✖️ **Multiplication (*)**
+- ➗ **Division (/)**
 
-Perform basic arithmetic operations:
+### 🔬 Level 2: Scientific Calculator
+Unlock advanced mathematical operations:
 
-Addition (+)
+- 📐 **Trigonometric Functions**: `sin()`, `cos()`, `tan()`
+- 📊 **Logarithmic Functions**: `log()`, `ln()`
+- 📈 **Power and Root Calculations**: `x^y`, `√x`
+- 🎯 **Factorial Calculation**: `n!`
+- 📜 **Calculation History**: View and reuse previous results
 
-Subtraction (-)
+## 📖 Usage
 
-Multiplication (*)
+### Basic Calculator:
+1. Enter numbers and select the arithmetic operation.
+2. Press the **"="** button to view the result.
 
-Division (/)
+### Scientific Calculator:
+1. Access advanced functions like trigonometry and logarithmic calculations.
+2. Perform complex operations seamlessly with intuitive input.
 
-Level 2: Scientific Calculator
+## 📦 Installation
 
-Additional scientific operations:
+Download and install the latest release from GitHub:
 
-Trigonometric functions (sin, cos, tan)
+[![Get it on GitHub](https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/blob/master/badge_github.png)](https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/releases/latest)
 
-Logarithmic functions (log, ln)
+## 🛠️ Requirements
+- **Android Studio**: Latest version recommended
+- **Android Device/Emulator**: API Level 21+
 
-Power and root calculations
-
-Factorial calculation
-
-Maintain a history of previous calculations
-
-## Usage
-
-Basic Calculator:
-
-Enter numbers and select the arithmetic operation.
-
-Press the "=" button to view the result.
-
-Scientific Calculator:
-
-Access advanced functions like trigonometry and logarithmic calculations.
-
-# Installation
-
-[<img src="https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/blob/master/badge_github.png"
-    alt="Get it on GitHub"
-    height="80">](https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/releases/latest)
-
+## 📧 Contact
+For any queries or feedback, reach out via:
+- GitHub: [DevanshuDubey](https://github.com/DevanshuDubey)

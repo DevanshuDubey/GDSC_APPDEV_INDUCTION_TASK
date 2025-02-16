@@ -274,7 +274,7 @@ fun evaluateExpression(expression: String,rad: Boolean): Double {
     val openParenthesesCount = modifiedExpression.count { it == '(' }
     val closeParenthesesCount = modifiedExpression.count { it == ')' }
 
-    // add closing brackets to avoid errrors
+    // add closing brackets to avoid errors
     if (openParenthesesCount > closeParenthesesCount) {
         modifiedExpression += ")".repeat(openParenthesesCount - closeParenthesesCount)
     }

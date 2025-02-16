@@ -43,3 +43,10 @@ Press the "=" button to view the result.
 Scientific Calculator:
 
 Access advanced functions like trigonometry and logarithmic calculations.
+
+# Installation
+
+[<img src="https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/blob/master/badge_github.png"
+    alt="Get it on GitHub"
+    height="80">](https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/releases/latest)
+

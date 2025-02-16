@@ -190,7 +190,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                         CalculatorButton(".")  { input = newInput(input,".") }
                         CalculatorButton("=")  { val result = calculateResult(input, rad)
                             if (result != "Error") {
-                                history.add(CalculationHistory(input, result)) // Add to history
+                                addHistory(input, result) // Add to history
                             }
                             input = result }
                     }
@@ -461,7 +461,6 @@ fun handlePercentage(expression: String): String {
 
 fun handleImplicitMultiplication(expression: String): String {
     var modifiedExpression = expression
-    val functions = listOf("sin", "cos", "tan", "log", "ln", "√")
 
     for (i in 1 until modifiedExpression.length) {
         if (modifiedExpression[i].isLetter() || modifiedExpression[i] == '(' || modifiedExpression[i] == '√') {

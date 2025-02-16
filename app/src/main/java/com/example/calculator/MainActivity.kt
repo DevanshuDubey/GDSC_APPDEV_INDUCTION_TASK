@@ -20,11 +20,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +36,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.cos
 import kotlin.math.ln
-import kotlin.math.log10
+import kotlin.math.log
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -60,20 +58,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
-    //input and history
+    //input
     var input by remember { mutableStateOf("") }
     var rad: Boolean by remember { mutableStateOf(true) }
-    var history = remember { mutableStateListOf<CalculationHistory>() }
-    var showHistory by remember { mutableStateOf(false) }
-
-    fun addHistory(expression: String, result: String) {
-        val newHistory = CalculationHistory(expression, result)
-        history =
-            (listOf(newHistory) + history).take(5) as SnapshotStateList<CalculationHistory> // Keep only the last 5 entries
-    }
 
     Box(
         modifier = Modifier
@@ -117,7 +106,6 @@ fun Greeting(modifier: Modifier = Modifier) {
                         CalculatorButton("sin") { input = newInput(input,"sin(") }
                         CalculatorButton("cos") { input = newInput(input,"cos(") }
                         CalculatorButton("tan") { input = newInput(input,"tan(") }
-                        CalculatorButton("History") { showHistory = !showHistory }
                     }
 
                     Row(
@@ -188,43 +176,10 @@ fun Greeting(modifier: Modifier = Modifier) {
                         CalculatorButton("00") { input = newInput(input,"00")}
                         CalculatorButton("0")  { input = newInput(input,"0") }
                         CalculatorButton(".")  { input = newInput(input,".") }
-                        CalculatorButton("=")  { val result = calculateResult(input, rad)
-                            if (result != "Error") {
-                                addHistory(input, result) // Add to history
-                            }
-                            input = result }
-                    }
-                    if (showHistory) {
-                        HistoryScreen(history)
+                        CalculatorButton("=")  { input = calculateResult(input,rad) }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun HistoryScreen(history: List<CalculationHistory>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .background(color = Color.DarkGray, shape= CircleShape)
-
-    ) {
-        Text(
-            text = "History",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
-        )
-        history.forEach { item ->
-            Text(
-                text = "${item.expression} = ${item.result}",
-                fontSize = 16.sp,
-                color = Color.White,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
         }
     }
 }
@@ -253,11 +208,6 @@ fun CalculatorButton(label: String, onClick: () -> Unit) {
     }
 }
 
-data class CalculationHistory(
-    val expression: String,
-    val result: String
-)
-
 fun newInput(currentInput: String, newInput: String): String {
     val operators = setOf("+", "-", "×", "/", "^", "%", "!")
     val numericvalues = setOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0","e","π")
@@ -265,9 +215,6 @@ fun newInput(currentInput: String, newInput: String): String {
     return when {
         //only allow "-" at start
         currentInput.isEmpty() -> if (newInput in operators && newInput != "-") "" else newInput
-
-        //ad multiply after closing bracket when input is number
-        newInput in numericvalues && currentInput.last() == ')' -> "$currentInput×$newInput"
 
         //multiply consecutive pi or e inputs if prevvalues are numeric
         (currentInput in numericvalues) && (newInput == "π" || newInput == "e" ) -> "$currentInput×$newInput"
@@ -327,7 +274,7 @@ fun evaluateExpression(expression: String,rad: Boolean): Double {
     val openParenthesesCount = modifiedExpression.count { it == '(' }
     val closeParenthesesCount = modifiedExpression.count { it == ')' }
 
-    // add closing brackets to avoid errors
+    // add closing brackets to avoid errrors
     if (openParenthesesCount > closeParenthesesCount) {
         modifiedExpression += ")".repeat(openParenthesesCount - closeParenthesesCount)
     }
@@ -339,9 +286,6 @@ fun evaluateExpression(expression: String,rad: Boolean): Double {
     modifiedExpression = handlePower(modifiedExpression)
     modifiedExpression = handleSquareRoot(modifiedExpression)
 
-
-
-    //used chatGPT for below code------------------->
     return object : Any() {
         var pos = -1
         var ch = 0
@@ -400,12 +344,11 @@ fun evaluateExpression(expression: String,rad: Boolean): Double {
             return x
         }
     }.parse()
-    //<----------------------------
-
 }
 
+
 //calculate functions
-fun handleFunctions(expression: String, rad: Boolean): String {
+fun handleFunctions(expression: String,rad: Boolean): String {
     var modifiedExpression = expression
     val functions = listOf("sin", "cos", "tan", "log", "ln")
 
@@ -416,18 +359,25 @@ fun handleFunctions(expression: String, rad: Boolean): String {
 
             val innerExpression =
                 modifiedExpression.substring(startIndex + function.length + 1, endIndex)
-            val innerResult = evaluateExpression(innerExpression, rad)
+            val innerResult = evaluateExpression(innerExpression,rad)
 
             val result = when (function) {
-                "sin" -> if (rad) sin(innerResult) else sin(degreesToRadians(innerResult))
-                "cos" -> if (rad) cos(innerResult) else cos(degreesToRadians(innerResult))
-                "tan" -> if (rad) tan(innerResult) else tan(degreesToRadians(innerResult))
-                "log" -> log10(innerResult)
+                "sin" -> {
+                    if (rad) sin(innerResult) else sin(degreesToRadians(innerResult))
+                }
+                "cos" -> {
+                    if (rad) cos(innerResult) else cos(degreesToRadians(innerResult))
+                }
+                "tan" -> {
+                    if (rad) tan(innerResult) else tan(degreesToRadians(innerResult))
+                }
+                "log" -> log(10.0, innerResult)
                 "ln" -> ln(innerResult)
                 else -> throw RuntimeException("Unknown function: $function")
             }
 
-            modifiedExpression = modifiedExpression.replaceRange(startIndex, endIndex + 1, result.toString())
+            modifiedExpression =
+                modifiedExpression.replaceRange(startIndex, endIndex + 1, result.toString())
         }
     }
     return modifiedExpression
@@ -435,38 +385,72 @@ fun handleFunctions(expression: String, rad: Boolean): String {
 
 fun handleFactorial(expression: String): String {
     var modifiedExpression = expression
-    val regex = "(\\d+)!".toRegex()
+    while (modifiedExpression.contains("!")) {
+        val factorialIndex = modifiedExpression.indexOf("!")
+        var numberStartIndex = factorialIndex - 1
+        while (numberStartIndex >= 0 && (modifiedExpression[numberStartIndex].isDigit() || modifiedExpression[numberStartIndex] == '.')) {
+            numberStartIndex--
+        }
+        numberStartIndex++
 
-    regex.findAll(modifiedExpression).forEach { matchResult ->
-        val number = matchResult.groupValues[1].toInt()
-        val factorialResult = factorial(number)
+        val numberString = modifiedExpression.substring(numberStartIndex, factorialIndex)
+        val number = numberString.toDouble()
+        val factorialResult = factorial(number.toInt())
 
-        modifiedExpression = modifiedExpression.replace(matchResult.value, factorialResult.toString())
+        modifiedExpression = modifiedExpression.replaceRange(
+            numberStartIndex,
+            factorialIndex + 1,
+            factorialResult.toString()
+        )
     }
     return modifiedExpression
 }
 
 fun handlePercentage(expression: String): String {
     var modifiedExpression = expression
-    val regex = "(\\d+(\\.\\d+)?)%".toRegex()
+    while (modifiedExpression.contains("%")) {
+        val percentageIndex = modifiedExpression.indexOf("%")
+        var numberStartIndex = percentageIndex - 1
+        while (numberStartIndex >= 0 && (modifiedExpression[numberStartIndex].isDigit() || modifiedExpression[numberStartIndex] == '.')) {
+            numberStartIndex--
+        }
+        numberStartIndex++
 
-    regex.findAll(modifiedExpression).forEach { matchResult ->
-        val number = matchResult.groupValues[1].toDouble()
+        val numberStr = modifiedExpression.substring(numberStartIndex, percentageIndex)
+        val number = numberStr.toDouble()
         val percentageResult = number / 100.0
 
-        modifiedExpression = modifiedExpression.replace(matchResult.value, percentageResult.toString())
+        modifiedExpression = modifiedExpression.replaceRange(
+            numberStartIndex,
+            percentageIndex + 1,
+            percentageResult.toString()
+        )
     }
     return modifiedExpression
 }
 
 fun handleImplicitMultiplication(expression: String): String {
     var modifiedExpression = expression
-
-    for (i in 1 until modifiedExpression.length) {
-        if (modifiedExpression[i].isLetter() || modifiedExpression[i] == '(' || modifiedExpression[i] == '√') {
-            if (modifiedExpression[i - 1].isDigit() || modifiedExpression[i - 1] == ')') {
-                modifiedExpression = modifiedExpression.substring(0, i) + "*" + modifiedExpression.substring(i)
+    val functions = listOf("sin", "cos", "tan", "log", "ln")
+    var i = 0
+    while (i < modifiedExpression.length) {
+        if (modifiedExpression[i].isDigit() || modifiedExpression[i] == '.') {
+            var j = i + 1
+            while (j < modifiedExpression.length && (modifiedExpression[j].isDigit() || modifiedExpression[j] == '.')) {
+                j++
             }
+            if (j < modifiedExpression.length) {
+                if (modifiedExpression[j] == '(' || functions.any { modifiedExpression.startsWith(it, j) } || modifiedExpression[j] == '√') {
+                    modifiedExpression = modifiedExpression.substring(0, j) + "*" + modifiedExpression.substring(j)
+                    i = j + 1
+                } else {
+                    i = j
+                }
+            } else {
+                i = j
+            }
+        } else {
+            i++
         }
     }
     return modifiedExpression
@@ -474,28 +458,50 @@ fun handleImplicitMultiplication(expression: String): String {
 
 fun handlePower(expression: String): String {
     var modifiedExpression = expression
-    val regex = "(\\d+(\\.\\d+)?)\\^(\\d+(\\.\\d+)?)".toRegex()
+    while (modifiedExpression.contains("^")) {
+        val powerIndex = modifiedExpression.indexOf("^")
+        var baseStartIndex = powerIndex - 1
+        while (baseStartIndex >= 0 && (modifiedExpression[baseStartIndex].isDigit() || modifiedExpression[baseStartIndex] == '.')) {
+            baseStartIndex--
+        }
+        baseStartIndex++
 
-    regex.findAll(modifiedExpression).forEach { matchResult ->
-        val base = matchResult.groupValues[1].toDouble()
-        val exponent = matchResult.groupValues[3].toDouble()
+        var exponentEndIndex = powerIndex + 1
+        while (exponentEndIndex < modifiedExpression.length && (modifiedExpression[exponentEndIndex].isDigit() || modifiedExpression[exponentEndIndex] == '.')) {
+            exponentEndIndex++
+        }
+
+        val baseStr = modifiedExpression.substring(baseStartIndex, powerIndex)
+        val exponentStr = modifiedExpression.substring(powerIndex + 1, exponentEndIndex)
+        val base = baseStr.toDouble()
+        val exponent = exponentStr.toDouble()
         val powerResult = base.pow(exponent)
 
-        modifiedExpression = modifiedExpression.replace(matchResult.value, powerResult.toString())
+        modifiedExpression = modifiedExpression.replaceRange(
+            baseStartIndex,
+            exponentEndIndex,
+            powerResult.toString()
+        )
     }
     return modifiedExpression
 }
 
 fun handleSquareRoot(expression: String): String {
     var modifiedExpression = expression
-    val regex = "√(\\d+(\\.\\d+)?)".toRegex()
+    while (modifiedExpression.contains("√")) {
+        val sqrtIndex = modifiedExpression.indexOf("√")
+        var numberStartIndex = sqrtIndex + 1
+        while (numberStartIndex < modifiedExpression.length && (modifiedExpression[numberStartIndex].isDigit() || modifiedExpression[numberStartIndex] == '.')) {
+            numberStartIndex++
+        }
 
-    regex.findAll(modifiedExpression).forEach { matchResult ->
-        val number = matchResult.groupValues[1].toDouble()
+        val numberStr = modifiedExpression.substring(sqrtIndex + 1, numberStartIndex)
+        val number = numberStr.toDouble()
         if (number < 0) throw RuntimeException("Square root of a negative number is not defined")
         val sqrtResult = sqrt(number)
 
-        modifiedExpression = modifiedExpression.replace(matchResult.value, sqrtResult.toString())
+        modifiedExpression =
+            modifiedExpression.replaceRange(sqrtIndex, numberStartIndex, sqrtResult.toString())
     }
     return modifiedExpression
 }
@@ -503,17 +509,20 @@ fun handleSquareRoot(expression: String): String {
 fun findClosingParenthesis(expression: String, startIndex: Int): Int {
     var openCount = 1
     for (i in startIndex + 1 until expression.length) {
-        when (expression[i]) {
-            '(' -> openCount++
-            ')' -> openCount--
-        }
+        if (expression[i] == '(') openCount++
+        else if (expression[i] == ')') openCount--
         if (openCount == 0) return i
     }
     return -1
 }
 
 fun factorial(n: Int): Int {
-    return if (n == 0) 1 else (1..n).reduce { acc, i -> acc * i }
+    if (n == 0) return 1
+    var result = 1
+    for (i in 1..n) {
+        result *= i
+    }
+    return result
 }
 
 fun formatResult(result: Double): String {
@@ -528,7 +537,6 @@ fun formatResult(result: Double): String {
 fun degreesToRadians(degrees: Double): Double {
     return degrees * (Math.PI / 180.0)
 }
-
 
 @Preview(showBackground = true)
 @Composable

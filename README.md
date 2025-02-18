@@ -35,9 +35,10 @@ Unlock advanced mathematical operations:
 ### 📸 Demo Video
 [![pngwing com](https://github.com/user-attachments/assets/2c51a054-806b-4165-9e31-0d5db4261ef4)](https://youtu.be/7QmbgnLvMpk?si=lB2_godHfjyI9rng)
 ### 📸 Screenshots
-[![image](https://github.com/user-attachments/assets/d17c4e68-d455-4297-84cd-9cdb6d61e51f)
+[![image](https://github.com/user-attachments/assets/d17c4e68-d455-4297-84cd-9cdb6d61e51f)](width = "250")
+
 ![image](https://github.com/user-attachments/assets/a9246ef4-84aa-48d1-957c-c72de50228d8)
-![image](https://github.com/user-attachments/assets/bc89dfb1-303b-4d9e-9d1b-c1bc92eb5d61)](width = "250")
+![image](https://github.com/user-attachments/assets/bc89dfb1-303b-4d9e-9d1b-c1bc92eb5d61)
 
 ## 📂 Tech Stack
 

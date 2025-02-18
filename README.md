@@ -1,6 +1,7 @@
 # 📱 Calculator Application
 
 A powerful and easy-to-use calculator application built with **Jetpack Compose**. This application supports both **basic arithmetic** and **scientific calculations** with a user-friendly interface.
+For Project Report: https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/blob/master/GDSC-App-Development-Induction-Task-Report.pdf.pdf
 
 ## ✨ Features
 

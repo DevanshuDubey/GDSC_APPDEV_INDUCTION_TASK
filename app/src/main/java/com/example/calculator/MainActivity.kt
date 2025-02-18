@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
 fun CalculatorUI(modifier: Modifier = Modifier) {
     //input
     var input by remember { mutableStateOf("") }
-    var rad: Boolean by remember { mutableStateOf(true) }
+    var rad: Boolean by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -364,7 +364,7 @@ fun handleFunctions(expression: String,rad: Boolean): String {
                 "tan" -> {
                     if (rad) tan(innerResult) else tan(degreesToRadians(innerResult))
                 }
-                "log" -> log(10.0, innerResult)
+                "log" -> log(innerResult, 10.0)
                 "ln" -> ln(innerResult)
                 else -> throw RuntimeException("Unknown function: $function")
             }

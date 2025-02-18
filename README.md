@@ -34,7 +34,6 @@ Unlock advanced mathematical operations:
 ## App Preview
 ### 📸 Demo Video
 [![png-transparent-youtube-play-button-computer-icons-youtube-youtube-logo-angle-rectangle-logo-thumbnail](https://github.com/user-attachments/assets/1eb5c40d-27fb-4910-a7f6-0ce144fb356e)](https://youtu.be/7QmbgnLvMpk?si=lB2_godHfjyI9rng)
-https://youtu.be/7QmbgnLvMpk?si=lB2_godHfjyI9rng
 ### 📸 Screenshots
 
 ## 📂 Tech Stack

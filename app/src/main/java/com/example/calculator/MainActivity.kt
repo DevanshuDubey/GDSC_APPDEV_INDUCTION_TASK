@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    Greeting(modifier = Modifier.padding(innerPadding))
+                    CalculatorUI(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(modifier: Modifier = Modifier) {
+fun CalculatorUI(modifier: Modifier = Modifier) {
     //input
     var input by remember { mutableStateOf("") }
     var rad: Boolean by remember { mutableStateOf(true) }
@@ -216,15 +216,14 @@ fun newInput(currentInput: String, newInput: String): String {
         //only allow "-" at start
         currentInput.isEmpty() -> if (newInput in operators && newInput != "-") "" else newInput
 
+        //replace op when another is clicked
+        (currentInput.last().toString() in operators) && newInput in operators -> currentInput.dropLast(1) + newInput
+
         //multiply consecutive pi or e inputs if prevvalues are numeric
-        (currentInput in numericvalues) && (newInput == "π" || newInput == "e" ) -> "$currentInput×$newInput"
+        (currentInput.last().toString() in numericvalues || currentInput.last().toString() == ")") && (newInput == "π" || newInput == "e" || newInput == "("||newInput in setOf("log(", "ln(", "sin(","cos(","tan(")) -> "$currentInput×$newInput"
 
         //add multply symbol when pi or e before and input is number
-        (currentInput in setOf("π","e")) && (newInput in numericvalues) -> "$currentInput×$newInput"
-
-        //replace op when another is clicked
-        operators.contains(currentInput.last().toString()) && newInput in operators ->
-            currentInput.dropLast(1) + newInput
+        (currentInput.last().toString() in setOf("π","e")) && (newInput in numericvalues) -> "$currentInput×$newInput"
 
         // dont add many decmals
         newInput == "." && currentInput.takeLastWhile { it.isDigit() || it == '.' }.contains(".") ->
@@ -234,20 +233,12 @@ fun newInput(currentInput: String, newInput: String): String {
         newInput == "!" && (currentInput.isEmpty() || !currentInput.last().isDigit() && currentInput.last() != ')') ->
             currentInput
 
-        // dont add factorial after decimal
-        newInput == "." && currentInput.lastOrNull() == '!' -> currentInput
-
-        // dont add multi factorials
-        newInput == "!" && currentInput.last() == '!' -> currentInput
-
-        // dont add "(" after number but 5x(...
-        newInput == "(" && currentInput.isNotEmpty() && currentInput.last().isDigit() -> "$currentInput×$newInput"
+        // dont add "(" after number or ")" but 5x(...
+        newInput == "(" && currentInput.isNotEmpty() && (currentInput.last().isDigit()||currentInput.last() == ')') -> "$currentInput×$newInput"
         //suggested by studio mine was currentInput + "×" + newInput
 
-        // dont add closing parenthesis at the start or without previous matching "("
+        // dont add closing bracket at the start or without previous matching "("
         newInput == ")" && (currentInput.count { it == '(' } <= currentInput.count { it == ')' }) -> currentInput
-
-        currentInput.last().isDigit() && (newInput == "log(" || newInput == "ln(") -> "$currentInput×$newInput"
 
         else -> currentInput + newInput
     }
@@ -274,18 +265,19 @@ fun evaluateExpression(expression: String,rad: Boolean): Double {
     val openParenthesesCount = modifiedExpression.count { it == '(' }
     val closeParenthesesCount = modifiedExpression.count { it == ')' }
 
-    // add closing brackets to avoid errors
+    // add closing brackets to avoid errrors
     if (openParenthesesCount > closeParenthesesCount) {
         modifiedExpression += ")".repeat(openParenthesesCount - closeParenthesesCount)
     }
 
-    modifiedExpression = handleImplicitMultiplication(modifiedExpression)
     modifiedExpression = handleFunctions(modifiedExpression,rad)
     modifiedExpression = handleFactorial(modifiedExpression)
     modifiedExpression = handlePercentage(modifiedExpression)
     modifiedExpression = handlePower(modifiedExpression)
     modifiedExpression = handleSquareRoot(modifiedExpression)
 
+
+    //Used ChatGPT to give below code for parsing expression----------->
     return object : Any() {
         var pos = -1
         var ch = 0
@@ -344,6 +336,7 @@ fun evaluateExpression(expression: String,rad: Boolean): Double {
             return x
         }
     }.parse()
+    //<------------------------------------------
 }
 
 
@@ -383,127 +376,80 @@ fun handleFunctions(expression: String,rad: Boolean): String {
     return modifiedExpression
 }
 
+fun processOperators(
+    expression: String,
+    operator: String,
+    operation: (Double) -> Double
+): String {
+    var modifiedExpression = expression
+    while (modifiedExpression.contains(operator)) {
+        val index = modifiedExpression.indexOf(operator)
+
+        // Identify the operand (supports numbers with decimals)
+        var numberStart = index - 1
+        while (numberStart >= 0 && (modifiedExpression[numberStart].isDigit() || modifiedExpression[numberStart] == '.')) {
+            numberStart--
+        }
+        numberStart++
+
+        // Extract and compute the result
+        val numberStr = modifiedExpression.substring(numberStart, index)
+        val number = numberStr.toDoubleOrNull() ?: throw RuntimeException("Invalid number")
+        val result = operation(number)
+
+        // Replace the operation with computed value
+        modifiedExpression = modifiedExpression.replaceRange(numberStart, index + 1, result.toString())
+    }
+    return modifiedExpression
+}
+
 fun handleFactorial(expression: String): String {
-    var modifiedExpression = expression
-    while (modifiedExpression.contains("!")) {
-        val factorialIndex = modifiedExpression.indexOf("!")
-        var numberStartIndex = factorialIndex - 1
-        while (numberStartIndex >= 0 && (modifiedExpression[numberStartIndex].isDigit() || modifiedExpression[numberStartIndex] == '.')) {
-            numberStartIndex--
-        }
-        numberStartIndex++
-
-        val numberString = modifiedExpression.substring(numberStartIndex, factorialIndex)
-        val number = numberString.toDouble()
-        val factorialResult = factorial(number.toInt())
-
-        modifiedExpression = modifiedExpression.replaceRange(
-            numberStartIndex,
-            factorialIndex + 1,
-            factorialResult.toString()
-        )
+    return processOperators(expression, "!") { n ->
+        if (n < 0 || n % 1 != 0.0) throw RuntimeException("Factorial is only for positive integers.")
+        factorial(n.toInt()).toDouble()
     }
-    return modifiedExpression
 }
-
+fun factorial(n: Int): Long {
+    return if (n == 0) 1 else n * factorial(n - 1)
+}
 fun handlePercentage(expression: String): String {
-    var modifiedExpression = expression
-    while (modifiedExpression.contains("%")) {
-        val percentageIndex = modifiedExpression.indexOf("%")
-        var numberStartIndex = percentageIndex - 1
-        while (numberStartIndex >= 0 && (modifiedExpression[numberStartIndex].isDigit() || modifiedExpression[numberStartIndex] == '.')) {
-            numberStartIndex--
-        }
-        numberStartIndex++
-
-        val numberStr = modifiedExpression.substring(numberStartIndex, percentageIndex)
-        val number = numberStr.toDouble()
-        val percentageResult = number / 100.0
-
-        modifiedExpression = modifiedExpression.replaceRange(
-            numberStartIndex,
-            percentageIndex + 1,
-            percentageResult.toString()
-        )
-    }
-    return modifiedExpression
+    return processOperators(expression, "%") { it / 100.0 }
 }
-
-fun handleImplicitMultiplication(expression: String): String {
-    var modifiedExpression = expression
-    val functions = listOf("sin", "cos", "tan", "log", "ln")
-    var i = 0
-    while (i < modifiedExpression.length) {
-        if (modifiedExpression[i].isDigit() || modifiedExpression[i] == '.') {
-            var j = i + 1
-            while (j < modifiedExpression.length && (modifiedExpression[j].isDigit() || modifiedExpression[j] == '.')) {
-                j++
-            }
-            if (j < modifiedExpression.length) {
-                if (modifiedExpression[j] == '(' || functions.any { modifiedExpression.startsWith(it, j) } || modifiedExpression[j] == '√') {
-                    modifiedExpression = modifiedExpression.substring(0, j) + "*" + modifiedExpression.substring(j)
-                    i = j + 1
-                } else {
-                    i = j
-                }
-            } else {
-                i = j
-            }
-        } else {
-            i++
-        }
-    }
-    return modifiedExpression
-}
-
 fun handlePower(expression: String): String {
     var modifiedExpression = expression
     while (modifiedExpression.contains("^")) {
         val powerIndex = modifiedExpression.indexOf("^")
+
+        // Find the base (left side of ^)
         var baseStartIndex = powerIndex - 1
         while (baseStartIndex >= 0 && (modifiedExpression[baseStartIndex].isDigit() || modifiedExpression[baseStartIndex] == '.')) {
             baseStartIndex--
         }
         baseStartIndex++
 
+        // Find the exponent (right side of ^)
         var exponentEndIndex = powerIndex + 1
         while (exponentEndIndex < modifiedExpression.length && (modifiedExpression[exponentEndIndex].isDigit() || modifiedExpression[exponentEndIndex] == '.')) {
             exponentEndIndex++
         }
 
+        // Extract and calculate
         val baseStr = modifiedExpression.substring(baseStartIndex, powerIndex)
         val exponentStr = modifiedExpression.substring(powerIndex + 1, exponentEndIndex)
         val base = baseStr.toDouble()
         val exponent = exponentStr.toDouble()
         val powerResult = base.pow(exponent)
 
-        modifiedExpression = modifiedExpression.replaceRange(
-            baseStartIndex,
-            exponentEndIndex,
-            powerResult.toString()
-        )
+        // Replace the expression with the calculated value
+        modifiedExpression = modifiedExpression.replaceRange(baseStartIndex, exponentEndIndex, powerResult.toString())
     }
     return modifiedExpression
 }
-
 fun handleSquareRoot(expression: String): String {
-    var modifiedExpression = expression
-    while (modifiedExpression.contains("√")) {
-        val sqrtIndex = modifiedExpression.indexOf("√")
-        var numberStartIndex = sqrtIndex + 1
-        while (numberStartIndex < modifiedExpression.length && (modifiedExpression[numberStartIndex].isDigit() || modifiedExpression[numberStartIndex] == '.')) {
-            numberStartIndex++
-        }
-
-        val numberStr = modifiedExpression.substring(sqrtIndex + 1, numberStartIndex)
-        val number = numberStr.toDouble()
-        if (number < 0) throw RuntimeException("Square root of a negative number is not defined")
-        val sqrtResult = sqrt(number)
-
-        modifiedExpression =
-            modifiedExpression.replaceRange(sqrtIndex, numberStartIndex, sqrtResult.toString())
+    return processOperators(expression, "√") {
+        if (it < 0) throw RuntimeException("Not a Number")
+        sqrt(it)
     }
-    return modifiedExpression
 }
 
 fun findClosingParenthesis(expression: String, startIndex: Int): Int {
@@ -514,15 +460,6 @@ fun findClosingParenthesis(expression: String, startIndex: Int): Int {
         if (openCount == 0) return i
     }
     return -1
-}
-
-fun factorial(n: Int): Int {
-    if (n == 0) return 1
-    var result = 1
-    for (i in 1..n) {
-        result *= i
-    }
-    return result
 }
 
 fun formatResult(result: Double): String {
@@ -542,6 +479,6 @@ fun degreesToRadians(degrees: Double): Double {
 @Composable
 fun GreetingPreview() {
     CalculatorTheme {
-        Greeting()
+        CalculatorUI()
     }
 }

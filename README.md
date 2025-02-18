@@ -126,10 +126,6 @@ Download and install the latest release from GitHub:
 
 [![Get it on GitHub](https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/blob/master/badge_github.png)](https://github.com/DevanshuDubey/GDSC_APPDEV_INDUCTION_TASK/releases/latest)
 
-## 🛠️ Requirements
-- **Android Studio**: Latest version recommended
-- **Android Device/Emulator**: API Level 21+
-
 ## 📧 Contact
 For any queries or feedback, reach out via:
 - GitHub: [DevanshuDubey](https://github.com/DevanshuDubey)

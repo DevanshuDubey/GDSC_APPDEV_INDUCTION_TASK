@@ -19,7 +19,6 @@ Unlock advanced mathematical operations:
 - 📊 **Logarithmic Functions**: `log()`, `ln()`
 - 📈 **Power and Root Calculations**: `x^y`, `√x`
 - 🎯 **Factorial Calculation**: `n!`
-- 📜 **Calculation History**: View and reuse previous results
 
 ## 📖 Usage
 

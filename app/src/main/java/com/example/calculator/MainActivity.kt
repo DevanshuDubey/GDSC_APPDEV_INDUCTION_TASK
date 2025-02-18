@@ -219,7 +219,7 @@ fun newInput(currentInput: String, newInput: String): String {
         //replace op when another is clicked
         (currentInput.last().toString() in operators) && newInput in operators -> currentInput.dropLast(1) + newInput
 
-        //multiply consecutive pi or e inputs if prevvalues are numeric
+        //multiply consecutive pi or e inputs if prevvalues are numeric or ")
         (currentInput.last().toString() in numericvalues || currentInput.last().toString() == ")") && (newInput == "π" || newInput == "e" || newInput == "("||newInput in setOf("log(", "ln(", "sin(","cos(","tan(")) -> "$currentInput×$newInput"
 
         //add multply symbol when pi or e before and input is number
